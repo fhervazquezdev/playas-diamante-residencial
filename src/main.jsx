@@ -50,6 +50,8 @@ function App() {
         <nav className={menuOpen ? 'nav nav-open' : 'nav'}>
           <button onClick={() => scrollTo('modelos')}>Residencias</button>
           <button onClick={() => scrollTo('nosotros')}>El residencial</button>
+          <button onClick={() => scrollTo('blog')}>Blog</button>
+          <button onClick={() => scrollTo('ubicacion')}>Cómo llegar</button>
           <button onClick={() => scrollTo('contacto')}>Contacto</button>
           <button className="nav-cta" onClick={() => scrollTo('contacto')}>Agenda una visita <span>→</span></button>
         </nav>
@@ -66,7 +68,15 @@ function App() {
             <a className="text-link light" href="tel:+526646096749">Llamar ahora <span>↗</span></a>
           </div>
         </div>
-        <div className="hero-photo"><img src="/assets/about.jpg" alt="Vista de Playas Diamante Residencial" /></div>
+        <div className="hero-video" aria-label="Video de Playas Diamante Residencial">
+          <img src="/assets/about.jpg" alt="" aria-hidden="true" />
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/KqPjbF-ZnXA?autoplay=1&mute=1&loop=1&playlist=KqPjbF-ZnXA&controls=0&playsinline=1&modestbranding=1&rel=0"
+            title="Video de Playas Diamante Residencial"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
+          />
+        </div>
         <div className="hero-note"><span>01</span><div></div><p>Un hogar con otra perspectiva.</p></div>
       </section>
 
@@ -96,6 +106,22 @@ function App() {
       <section className="benefits-section">
         <p className="eyebrow">Por qué elegirnos</p><h2>Lo esencial, <em>bien cuidado.</em></h2>
         <div className="benefits-grid">{benefits.map(([icon, title, text]) => <article key={title}><span className="benefit-icon">{icon}</span><h3>{title}</h3><p>{text}</p></article>)}</div>
+      </section>
+
+      <section id="blog" className="blog-section">
+        <div className="section-heading"><div><p className="eyebrow">Diario Diamante</p><h2>Ideas para vivir<br /><em>mejor en Playas.</em></h2></div><p className="section-intro">Consejos e inspiración para disfrutar cada rincón de tu nueva vida junto al mar.</p></div>
+        <div className="blog-grid">
+          <article className="blog-feature"><img src="/assets/about.jpg" alt="Vista al mar desde Playas de Tijuana" /><div><p className="eyebrow">Estilo de vida · 4 min de lectura</p><h3>Una mañana frente al mar cambia todo el día.</h3><button className="text-link">Leer artículo <span>→</span></button></div></article>
+          <div className="blog-list">
+            <article><p className="eyebrow">Guía local · 3 min de lectura</p><h3>Cómo aprovechar un fin de semana en Playas de Tijuana.</h3><button className="text-link">Leer más <span>→</span></button></article>
+            <article><p className="eyebrow">Consejos · 2 min de lectura</p><h3>Claves para elegir la residencia que se siente como casa.</h3><button className="text-link">Leer más <span>→</span></button></article>
+          </div>
+        </div>
+      </section>
+
+      <section id="ubicacion" className="map-section">
+        <div className="map-copy"><p className="eyebrow">Visítanos</p><h2>Tu próxima vista<br /><em>está más cerca.</em></h2><p>Conoce Playas Diamante Residencial en Playas de Tijuana. Agenda una visita y déjanos mostrarte las opciones que tenemos para ti.</p><a className="button button-dark" target="_blank" rel="noreferrer" href="https://www.google.com/maps/search/?api=1&query=Playas+Diamante+Residencial+Tijuana">Abrir indicaciones <span>↗</span></a></div>
+        <div className="map-frame"><iframe title="Mapa de Playas Diamante Residencial" src="https://www.google.com/maps?q=Playas+Diamante+Residencial+Tijuana&output=embed" loading="lazy" referrerPolicy="no-referrer-when-downgrade" /></div>
       </section>
 
       <section id="contacto" className="contact-section">
