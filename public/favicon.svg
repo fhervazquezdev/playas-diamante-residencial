@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Playas Diamante Residencial</title>
+  <rect width="64" height="64" rx="15" fill="#12363a"/>
+  <path d="M14 39.5c5.1-5.4 11.6-5.4 17 0 5.1 5.4 11.6 5.4 17 0v10.8H14Z" fill="#6ac8e7"/>
+  <path d="M14 45c5.1-5.4 11.6-5.4 17 0 5.1 5.4 11.6 5.4 17 0v5.3H14Z" fill="#f0b065"/>
+  <path d="M21 34.5V25a11 11 0 0 1 22 0v9.5" fill="none" stroke="#f7f1e6" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"/>
+  <path d="M18 34.5h28" fill="none" stroke="#f7f1e6" stroke-linecap="round" stroke-width="4"/>
+  <circle cx="32" cy="19" r="3" fill="#f0b065"/>
+</svg>

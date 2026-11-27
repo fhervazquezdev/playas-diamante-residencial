@@ -3,13 +3,78 @@ import { createRoot } from 'react-dom/client'
 import './styles.css'
 
 const homes = [
-  { name: 'Master Suite', image: '/assets/master-suite.jpg', tag: 'Amplia y luminosa' },
-  { name: 'Amatista', image: '/assets/amatista.jpg', tag: 'Un refugio para ti' },
-  { name: 'Turquesa', image: '/assets/turquesa.jpg', tag: 'Vive con estilo' },
-  { name: 'Suite', image: '/assets/suite.jpg', tag: 'Comodidad diaria' },
-  { name: 'Penthouse', image: '/assets/penthouse.jpg', tag: 'Tu espacio en las alturas' },
-  { name: 'Nuevas Suites', image: '/assets/nuevas-suites.jpg', tag: 'Una nueva forma de habitar' },
+  { slug: 'master-suite', name: 'Master Suite', image: '/assets/master-suite.jpg', tag: 'Amplia y luminosa', price: '$865 USD / mes', type: 'Departamento · 1 recámara · 1 baño', intro: 'Un departamento amplio y luminoso, con una vista al mar que acompaña cada momento.', ideal: 'Ideal para una persona o pareja.', features: ['1 recámara con clóset y 1 baño', 'Cocina integral, cuarto de lavar y sala / comedor', 'Vista al mar y estacionamiento', 'Agua, luz y gas incluidos en la renta'], highlights: ['Seguridad 24 horas', 'Lavandería y tiendita', 'Equipo de mantenimiento'] },
+  { slug: 'amatista', name: 'Amatista', image: '/assets/amatista.jpg', tag: 'Un refugio para ti', price: '$995 USD / mes', fee: '$1,300 MXN de mantenimiento', type: 'Casa · 3 recámaras · 2.5 baños', intro: 'Una casa con vista al mar, espacios generosos y el ritmo tranquilo de Playas de Tijuana.', ideal: 'Pensada para una vida familiar, cómoda y conectada.', features: ['3 recámaras y 2 baños completos + medio baño', 'Sala, cocina, comedor y cuarto de lavar', '2 balcones, azotea y clóset adicional', 'Estacionamiento privado para 3 vehículos'], highlights: ['Casa club y áreas verdes', 'Asador y juegos para niños', 'Seguridad y registro de visitas'] },
+  { slug: 'turquesa', name: 'Turquesa', image: '/assets/turquesa.jpg', tag: 'Vive con estilo', price: '$1,075 USD / mes', fee: '$1,300 MXN de mantenimiento', type: 'Casa · 3 recámaras · 3 baños', intro: 'Una casa distribuida en cuatro niveles para disfrutar el espacio, la privacidad y una gran vista al mar.', ideal: 'Ideal para quien busca una casa amplia en una comunidad segura.', features: ['3 recámaras y 3 baños completos', 'Cocina integral y cuarto de lavar', '3 espacios de estacionamiento', 'Tanque de gas estacionario y boiler de paso'], highlights: ['Vista panorámica al mar', 'Seguridad 24 horas', 'Ambiente familiar'] },
+  { slug: 'suite', name: 'Suite', image: '/assets/suite.jpg', tag: 'Comodidad diaria', price: '$500 USD / mes', type: 'Estudio · 1 baño', intro: 'Un estudio práctico y sereno para hacer de la vista al mar parte de tu día a día.', ideal: 'Ideal para una persona o pareja. Se permite una mascota pequeña.', features: ['Estudio independiente con cocina, estufa y clóset', 'Un baño completo y vista al mar', 'Estacionamiento', 'Agua y luz incluidos en la renta'], highlights: ['Acceso controlado', 'Seguridad 24 horas', 'Atardeceres desde tu ventana'] },
+  { slug: 'penthouse', name: 'Penthouse', image: '/assets/penthouse.jpg', tag: 'Tu espacio en las alturas', price: '$1,475 USD / mes', type: 'Penthouse · 2 recámaras · 2.5 baños', intro: 'Un penthouse espacioso para descansar, recibir y disfrutar una perspectiva privilegiada de Playas.', ideal: 'Ideal para una persona o pareja. Contrato de arrendamiento de un año.', features: ['Recámara principal con walk-in clóset, baño y jacuzzi', 'Segundo dormitorio, oficina o estudio', 'Balcón privado con vista al mar', 'Cocina equipada y área de lavado con lavadora y secadora'], highlights: ['Aire acondicionado', 'Estacionamiento', 'Comunidad cerrada y seguridad 24 horas'] },
+  { slug: 'nuevas-suites', name: 'Nuevas Suites', image: '/assets/nuevas-suites.jpg', tag: 'Una nueva forma de habitar', price: 'Consulta disponibilidad', type: 'Estudio nuevo · 1 baño', intro: 'Un estudio nuevo con balcón y vista al mar, creado para una forma de vivir más ligera y conectada.', ideal: 'Ideal para una persona, estudiantes o una pareja. Mascotas pequeñas con costo extra.', features: ['Cocina integral, parrilla eléctrica y refrigerador', 'Clóset, baño completo y balcón con vista al mar', 'Estacionamiento asignado', 'Agua y luz incluidos en la renta'], highlights: ['Edificio nuevo', 'Lavandería y tiendita', 'Seguridad 24 horas'] },
 ]
+
+const modelFromPath = () => homes.find((home) => window.location.pathname.replace(/\/$/, '').endsWith(`/${home.slug}`)) || null
+
+function ModelLeadForm({ home }) {
+  const [status, setStatus] = useState({ type: '', message: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const submit = async (event) => {
+    event.preventDefault()
+    if (isSubmitting) return
+    const form = event.currentTarget
+    const values = Object.fromEntries(new FormData(form).entries())
+    setIsSubmitting(true)
+    setStatus({ type: '', message: '' })
+    try {
+      const response = await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(values) })
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(result.error || 'No fue posible enviar tu solicitud.')
+      form.reset()
+      setStatus({ type: 'success', message: 'Gracias. Recibimos tu solicitud y nos pondremos en contacto contigo pronto.' })
+      window.gtag?.('event', 'generate_lead', { form_id: `model-${home.slug}`, lead_source: home.name })
+    } catch (error) {
+      setStatus({ type: 'error', message: error.message || 'No fue posible enviar tu solicitud. Inténtalo de nuevo o llámanos.' })
+    } finally { setIsSubmitting(false) }
+  }
+
+  return <form className="model-form" onSubmit={submit} noValidate>
+    <label>Nombre<input required name="name" autoComplete="name" minLength="2" placeholder="¿Cómo te llamas?" /></label>
+    <label>Correo electrónico<input required type="email" name="email" autoComplete="email" placeholder="tu@correo.com" /></label>
+    <label>Teléfono<input required type="tel" name="phone" autoComplete="tel" minLength="7" placeholder="(664) 000 0000" /></label>
+    <label>Mensaje<textarea name="message" rows="3" maxLength="2000" placeholder={`Me interesa conocer ${home.name}`} /></label>
+    <label className="form-honeypot" aria-hidden="true">No llenar<input name="website" tabIndex="-1" autoComplete="off" /></label>
+    <input type="hidden" name="source" value={`Landing ${home.name}`} />
+    <button className="button button-dark" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Enviando…' : <>Solicitar información <span>→</span></>}</button>
+    {status.message && <p className={`model-form-notice model-form-notice-${status.type}`} role="status">{status.message}</p>}
+  </form>
+}
+
+function ModelPage({ home }) {
+  const goHome = () => { window.location.href = '/' }
+  const scrollToForm = () => document.getElementById('informacion')?.scrollIntoView({ behavior: 'smooth' })
+  const otherHomes = homes.filter((item) => item.slug !== home.slug).slice(0, 3)
+
+  return <main className="model-page">
+    <header className="site-header model-header">
+      <button className="brand" onClick={goHome} aria-label="Ir al inicio"><img src="/assets/logo-playas.png" alt="Playas Diamante Residencial" /></button>
+      <nav className="model-nav"><button onClick={goHome}>Residencias</button><a href="tel:+526646096749">(664) 609 6749</a><button className="nav-cta" onClick={scrollToForm}>Agenda una visita <span>→</span></button></nav>
+    </header>
+    <section className="model-hero">
+      <img src={home.image} alt={home.name} />
+      <div className="model-hero-overlay"></div>
+      <div className="model-hero-copy"><p className="eyebrow light">Playas Diamante · Modelo residencial</p><h1>{home.name}</h1><p>{home.intro}</p><button className="button button-light" onClick={scrollToForm}>Consultar disponibilidad <span>↓</span></button></div>
+      <p className="model-hero-count">{String(homes.indexOf(home) + 1).padStart(2, '0')} / 06</p>
+    </section>
+    <section className="model-summary">
+      <div><p className="eyebrow">Tu próximo espacio</p><h2>{home.type}</h2><p className="model-ideal">{home.ideal}</p></div>
+      <div className="model-price"><p>Renta mensual</p><strong>{home.price}</strong>{home.fee && <span>{home.fee}</span>}</div>
+    </section>
+    <section className="model-details"><div><p className="eyebrow">Una vida bien pensada</p><h2>Todo lo que necesitas,<br /><em>cerca del mar.</em></h2></div><ul>{home.features.map((feature) => <li key={feature}><span>✦</span>{feature}</li>)}</ul></section>
+    <section className="model-living"><div className="model-living-image"><img src="/assets/about.jpg" alt="Vista de Playas Diamante Residencial" /></div><div className="model-living-copy"><p className="eyebrow light">Vivir en Playas Diamante</p><h2>Más que un hogar,<br /><em>una manera de vivir.</em></h2><p>Disfruta un residencial privado con vista panorámica al mar y espacios pensados para tu tranquilidad.</p><div className="model-highlight-list">{home.highlights.map((highlight) => <span key={highlight}>{highlight}</span>)}</div></div></section>
+    <section id="informacion" className="model-inquiry"><div><p className="eyebrow">Conoce {home.name}</p><h2>Agenda una visita<br /><em>sin compromiso.</em></h2><p>Déjanos tus datos y te compartiremos disponibilidad, requisitos y todos los detalles que necesitas.</p><a className="phone model-phone" href="tel:+526646096749">(664) 609 6749 <span>↗</span></a></div><ModelLeadForm home={home} /></section>
+    <section className="model-more"><div className="section-heading"><div><p className="eyebrow">Explora otros modelos</p><h2>Un espacio para<br /><em>cada momento.</em></h2></div><button className="text-link" onClick={goHome}>Ver todas las residencias <span>→</span></button></div><div className="model-more-grid">{otherHomes.map((item) => <a href={`/${item.slug}/`} key={item.slug}><img src={item.image} alt={item.name} /><div><p>{item.tag}</p><h3>{item.name}</h3><span>Conocer modelo ↗</span></div></a>)}</div></section>
+    <footer><img src="/assets/logo-playas.png" alt="Playas Diamante Residencial" /><div><p>Playas de Tijuana, Baja California</p><p>© {new Date().getFullYear()} Playas Diamante Residencial</p></div><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Volver arriba ↑</button></footer>
+  </main>
+}
 
 const benefits = [
   ['24/7', 'Seguridad', 'Acceso controlado y vigilancia para tu tranquilidad.'],
@@ -49,9 +114,13 @@ function PostView({ post, onBack }) {
 }
 
 function App() {
+  const model = modelFromPath()
+  if (model) return <ModelPage home={model} />
+
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeHome, setActiveHome] = useState(null)
-  const [notice, setNotice] = useState('')
+  const [formStatus, setFormStatus] = useState({ type: '', message: '' })
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [activePost, setActivePost] = useState(postFromHash)
 
   useEffect(() => {
@@ -74,10 +143,33 @@ function App() {
     setMenuOpen(false)
   }
 
-  const submitForm = (event) => {
+  const submitForm = async (event) => {
     event.preventDefault()
-    setNotice('Gracias. Recibimos tu solicitud y nos pondremos en contacto contigo pronto.')
-    event.currentTarget.reset()
+    if (isSubmitting) return
+
+    const form = event.currentTarget
+    const values = Object.fromEntries(new FormData(form).entries())
+    setIsSubmitting(true)
+    setFormStatus({ type: '', message: '' })
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      })
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok) throw new Error(result.error || 'No fue posible enviar tu solicitud.')
+
+      form.reset()
+      setFormStatus({ type: 'success', message: 'Gracias. Recibimos tu solicitud y nos pondremos en contacto contigo pronto.' })
+      window.gtag?.('event', 'generate_lead', { form_id: 'contact-form', lead_source: 'website' })
+    } catch (error) {
+      setFormStatus({ type: 'error', message: error.message || 'No fue posible enviar tu solicitud. Inténtalo de nuevo o llámanos.' })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const openPost = (post) => { window.location.hash = `/diario/${post.slug}` }
@@ -138,7 +230,7 @@ function App() {
       <section id="modelos" className="homes-section">
         <div className="section-heading"><div><p className="eyebrow">Encuentra tu espacio</p><h2>Residencias que<br /><em>se adaptan a ti.</em></h2></div><p className="section-intro">Conoce nuestras opciones disponibles y encuentra el espacio que mejor acompaña tu momento.</p></div>
         <div className="home-grid">
-          {homes.map((home, i) => <article className="home-card" key={home.name} onClick={() => setActiveHome(home)}>
+          {homes.map((home, i) => <article className="home-card" key={home.name} onClick={() => { window.location.href = `/${home.slug}/` }}>
             <div className="home-image"><img src={home.image} alt={home.name} /><span className="image-index">0{i + 1}</span></div>
             <div className="home-card-info"><div><p>{home.tag}</p><h3>{home.name}</h3></div><button aria-label={`Ver ${home.name}`}>↗</button></div>
           </article>)}
@@ -172,7 +264,16 @@ function App() {
 
       <section id="contacto" className="contact-section">
         <div className="contact-copy"><p className="eyebrow light">Conoce tu próximo hogar</p><h2>Da el primer paso<br /><em>hacia tu nueva vista.</em></h2><p>Cuéntanos qué estás buscando. Nuestro equipo te ayudará a conocer las opciones que tenemos para ti.</p><a href="tel:+526646096749" className="phone">(664) 609 6749 <span>↗</span></a></div>
-        <form onSubmit={submitForm}><label>Nombre<input required name="name" placeholder="¿Cómo te llamas?" /></label><label>Correo electrónico<input required type="email" name="email" placeholder="tu@correo.com" /></label><label>Teléfono<input required type="tel" name="phone" placeholder="(664) 000 0000" /></label><label>Mensaje<textarea name="message" rows="3" placeholder="Cuéntanos qué tipo de residencia buscas" /></label><button className="button button-light" type="submit">Enviar solicitud <span>→</span></button>{notice && <p className="form-notice" role="status">{notice}</p>}</form>
+        <form id="contact-form" onSubmit={submitForm}>
+          <label>Nombre<input required name="name" autoComplete="name" minLength="2" placeholder="¿Cómo te llamas?" /></label>
+          <label>Correo electrónico<input required type="email" name="email" autoComplete="email" placeholder="tu@correo.com" /></label>
+          <label>Teléfono<input required type="tel" name="phone" autoComplete="tel" minLength="7" placeholder="(664) 000 0000" /></label>
+          <label>Mensaje<textarea name="message" rows="3" maxLength="2000" placeholder="Cuéntanos qué tipo de residencia buscas" /></label>
+          <label className="form-honeypot" aria-hidden="true">No llenar<input name="website" tabIndex="-1" autoComplete="off" /></label>
+          <input type="hidden" name="source" value="Sitio web" />
+          <button className="button button-light" type="submit" disabled={isSubmitting}>{isSubmitting ? 'Enviando…' : <>Enviar solicitud <span>→</span></>}</button>
+          {formStatus.message && <p className={`form-notice form-notice-${formStatus.type}`} role="status" aria-live="polite">{formStatus.message}</p>}
+        </form>
       </section>
 
       <footer><img src="/assets/logo-playas.png" alt="Playas Diamante Residencial" /><div><p>Playas de Tijuana, Baja California</p><p>© {new Date().getFullYear()} Playas Diamante Residencial</p></div><button onClick={() => scrollTo('inicio')}>Volver arriba ↑</button></footer>
