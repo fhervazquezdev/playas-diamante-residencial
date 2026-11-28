@@ -1,9 +1,7 @@
 # Cloudflare Pages local-development variables for /functions/api/contact.js.
 # In production, set these as encrypted secrets in Cloudflare Pages > Settings > Variables and Secrets.
-MAILGUN_API_KEY=key-your-mailgun-private-api-key
-MAILGUN_DOMAIN=mg.example.com
-MAILGUN_FROM=Playas Diamante Website <contact@mg.example.com>
-MAILGUN_TO=ventas@example.com
-
-# Set this only for a Mailgun account hosted in the EU region.
-# MAILGUN_API_BASE=https://api.eu.mailgun.net
+# The API token needs the account-level "Email Sending: Edit" permission.
+CLOUDFLARE_ACCOUNT_ID=your-cloudflare-account-id
+CLOUDFLARE_EMAIL_API_TOKEN=your-cloudflare-email-sending-api-token
+CONTACT_EMAIL_FROM=contact@playasdiamanteresidencial.com
+CONTACT_EMAIL_TO=ventas@example.com

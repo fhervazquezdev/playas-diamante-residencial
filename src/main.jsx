@@ -11,6 +11,60 @@ const homes = [
   { slug: 'nuevas-suites', name: 'Nuevas Suites', image: '/assets/nuevas-suites.jpg', tag: 'Una nueva forma de habitar', price: 'Consulta disponibilidad', type: 'Estudio nuevo · 1 baño', intro: 'Un estudio nuevo con balcón y vista al mar, creado para una forma de vivir más ligera y conectada.', ideal: 'Ideal para una persona, estudiantes o una pareja. Mascotas pequeñas con costo extra.', features: ['Cocina integral, parrilla eléctrica y refrigerador', 'Clóset, baño completo y balcón con vista al mar', 'Estacionamiento asignado', 'Agua y luz incluidos en la renta'], highlights: ['Edificio nuevo', 'Lavandería y tiendita', 'Seguridad 24 horas'] },
 ]
 
+const siteUrl = 'https://playasdiamanteresidencial.com'
+const defaultSeo = {
+  title: 'Casas y departamentos en renta en Playas de Tijuana | Playas Diamante',
+  description: 'Casas, departamentos y estudios en renta con vista al mar en Playas de Tijuana. Conoce Playas Diamante Residencial y agenda tu visita.',
+  image: '/assets/about.jpg',
+}
+
+function Seo({ title = defaultSeo.title, description = defaultSeo.description, image = defaultSeo.image, type = 'website', schema }) {
+  useEffect(() => {
+    const url = `${siteUrl}${window.location.pathname}`
+    const imageUrl = new URL(image, siteUrl).href
+    document.title = title
+
+    const setMeta = (selector, attribute, value) => {
+      let element = document.head.querySelector(selector)
+      if (!element) {
+        element = document.createElement('meta')
+        document.head.appendChild(element)
+      }
+      element.setAttribute(attribute, value)
+    }
+    setMeta('meta[name="description"]', 'content', description)
+    setMeta('meta[property="og:title"]', 'content', title)
+    setMeta('meta[property="og:description"]', 'content', description)
+    setMeta('meta[property="og:type"]', 'content', type)
+    setMeta('meta[property="og:url"]', 'content', url)
+    setMeta('meta[property="og:image"]', 'content', imageUrl)
+    setMeta('meta[name="twitter:card"]', 'content', 'summary_large_image')
+    setMeta('meta[name="twitter:title"]', 'content', title)
+    setMeta('meta[name="twitter:description"]', 'content', description)
+    setMeta('meta[name="twitter:image"]', 'content', imageUrl)
+
+    let canonical = document.head.querySelector('link[rel="canonical"]')
+    if (!canonical) {
+      canonical = document.createElement('link')
+      canonical.rel = 'canonical'
+      document.head.appendChild(canonical)
+    }
+    canonical.href = url
+
+    const structuredData = document.getElementById('structured-data')
+    if (structuredData) structuredData.remove()
+    if (schema) {
+      const script = document.createElement('script')
+      script.id = 'structured-data'
+      script.type = 'application/ld+json'
+      script.text = JSON.stringify(schema)
+      document.head.appendChild(script)
+    }
+  }, [title, description, image, type, schema])
+
+  return null
+}
+
 const modelFromPath = () => homes.find((home) => window.location.pathname.replace(/\/$/, '').endsWith(`/${home.slug}`)) || null
 
 function ModelLeadForm({ home }) {
@@ -53,7 +107,19 @@ function ModelPage({ home }) {
   const scrollToForm = () => document.getElementById('informacion')?.scrollIntoView({ behavior: 'smooth' })
   const otherHomes = homes.filter((item) => item.slug !== home.slug).slice(0, 3)
 
+  const seoTitle = `${home.name}: ${home.type.split(' · ')[0]} en renta en Playas de Tijuana | Playas Diamante`
+  const seoDescription = `${home.type}. ${home.intro} ${home.features[0]}. Consulta disponibilidad y agenda una visita.`
+  const price = home.price.match(/[\d,]+/)?.[0]?.replace(',', '')
+  const modelSchema = {
+    '@context': 'https://schema.org', '@type': 'Product',
+    name: `${home.name} en renta en Playas Diamante Residencial`, description: seoDescription,
+    image: `${siteUrl}${home.image}`, url: `${siteUrl}/${home.slug}/`,
+    brand: { '@type': 'Organization', name: 'Playas Diamante Residencial' },
+    offers: { '@type': 'Offer', ...(price ? { priceCurrency: home.price.includes('MXN') ? 'MXN' : 'USD', price } : {}), availability: 'https://schema.org/LimitedAvailability', url: `${siteUrl}/${home.slug}/` },
+  }
+
   return <main className="model-page">
+    <Seo title={seoTitle} description={seoDescription} image={home.image} schema={modelSchema} />
     <header className="site-header model-header">
       <button className="brand" onClick={goHome} aria-label="Ir al inicio"><img src="/assets/logo-playas.png" alt="Playas Diamante Residencial" /></button>
       <nav className="model-nav"><button onClick={goHome}>Residencias</button><a href="tel:+526646096749">(664) 609 6749</a><button className="nav-cta" onClick={scrollToForm}>Agenda una visita <span>→</span></button></nav>
@@ -103,10 +169,19 @@ const posts = [
   },
 ]
 
-const postFromHash = () => posts.find((post) => window.location.hash === `#/diario/${post.slug}`) || null
+const postFromPath = () => posts.find((post) => window.location.pathname.replace(/\/$/, '') === `/diario/${post.slug}`) || null
 
 function PostView({ post, onBack }) {
+  const seoTitle = `${post.title} | Diario Diamante`
+  const articleSchema = {
+    '@context': 'https://schema.org', '@type': 'Article', headline: post.title, description: post.intro,
+    image: `${siteUrl}${post.image}`, mainEntityOfPage: `${siteUrl}/diario/${post.slug}/`,
+    author: { '@type': 'Organization', name: 'Playas Diamante Residencial' },
+    publisher: { '@type': 'Organization', name: 'Playas Diamante Residencial', logo: { '@type': 'ImageObject', url: `${siteUrl}/assets/logo-playas.png` } },
+    inLanguage: 'es-MX',
+  }
   return <main className="post-page">
+    <Seo title={seoTitle} description={post.intro} image={post.image} type="article" schema={articleSchema} />
     <header className="site-header"><button className="brand" onClick={onBack} aria-label="Volver al inicio"><img src="/assets/logo-playas.png" alt="Playas Diamante Residencial" /></button><button className="post-back" onClick={onBack}>← Volver al diario</button></header>
     <section className="post-hero"><div><p className="eyebrow">{post.category} · {post.readTime}</p><h1>{post.title}</h1><p>{post.intro}</p></div><img src={post.image} alt="" /></section>
     <article className="post-body">{post.sections.map(([heading, body]) => <section key={heading}><h2>{heading}</h2><p>{body}</p></section>)}<div className="post-cta"><p className="eyebrow">Conoce Playas Diamante</p><h2>Encuentra un espacio<br /><em>que se sienta tuyo.</em></h2><button className="button button-dark" onClick={onBack}>Ver residencias <span>→</span></button></div></article>
@@ -121,18 +196,12 @@ function App() {
   const [activeHome, setActiveHome] = useState(null)
   const [formStatus, setFormStatus] = useState({ type: '', message: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [activePost, setActivePost] = useState(postFromHash)
+  const [activePost, setActivePost] = useState(postFromPath)
 
   useEffect(() => {
     document.body.style.overflow = activeHome ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [activeHome])
-
-  useEffect(() => {
-    const handleHashChange = () => setActivePost(postFromHash())
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
 
   useEffect(() => {
     if (activePost) window.scrollTo({ top: 0, behavior: 'instant' })
@@ -172,13 +241,22 @@ function App() {
     }
   }
 
-  const openPost = (post) => { window.location.hash = `/diario/${post.slug}` }
-  const closePost = () => { window.location.hash = '' }
+  const openPost = (post) => { window.location.href = `/diario/${post.slug}/` }
+  const closePost = () => { window.location.href = '/#blog' }
 
   if (activePost) return <PostView post={activePost} onBack={closePost} />
 
+  const homeSchema = {
+    '@context': 'https://schema.org', '@graph': [
+      { '@type': 'Organization', '@id': `${siteUrl}/#organization`, name: 'Playas Diamante Residencial', url: siteUrl, logo: `${siteUrl}/assets/logo-playas.png`, telephone: '+52-664-609-6749', areaServed: { '@type': 'City', name: 'Tijuana' } },
+      { '@type': 'WebSite', '@id': `${siteUrl}/#website`, url: siteUrl, name: 'Playas Diamante Residencial', inLanguage: 'es-MX', publisher: { '@id': `${siteUrl}/#organization` } },
+      { '@type': 'ItemList', name: 'Residencias en renta en Playas de Tijuana', itemListElement: homes.map((home, index) => ({ '@type': 'ListItem', position: index + 1, name: home.name, url: `${siteUrl}/${home.slug}/` })) },
+    ],
+  }
+
   return (
     <main>
+      <Seo schema={homeSchema} />
       <header className="site-header">
         <button className="brand" onClick={() => scrollTo('inicio')} aria-label="Ir al inicio">
           <img src="/assets/logo-playas.png" alt="Playas Diamante Residencial" />

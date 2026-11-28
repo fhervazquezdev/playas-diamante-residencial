@@ -34,9 +34,15 @@ export async function onRequest(context) {
     return json({ error: 'Revisa tu nombre, correo electrónico y teléfono.' }, 400)
   }
 
-  const { MAILGUN_API_KEY: apiKey, MAILGUN_DOMAIN: domain, MAILGUN_TO: to, MAILGUN_FROM: from, MAILGUN_API_BASE: apiBase = 'https://api.mailgun.net' } = context.env
-  if (!apiKey || !domain || !to || !from) {
-    console.error('Mailgun contact form is missing required environment variables.')
+  const {
+    CLOUDFLARE_ACCOUNT_ID: accountId,
+    CLOUDFLARE_EMAIL_API_TOKEN: apiToken,
+    CONTACT_EMAIL_TO: to,
+    CONTACT_EMAIL_FROM: from,
+  } = context.env
+
+  if (!accountId || !apiToken || !to || !from) {
+    console.error('Cloudflare Email contact form is missing required environment variables.')
     return json({ error: 'El formulario no está disponible por el momento. Llámanos al (664) 609 6749.' }, 503)
   }
 
@@ -52,32 +58,33 @@ export async function onRequest(context) {
     message || '(Sin mensaje)',
   ].join('\n')
 
-  const payload = new URLSearchParams({
+  const payload = {
     from,
     to,
     subject: `Nueva solicitud web — ${name}`,
     text: emailBody,
-    'h:Reply-To': email,
-  })
+    reply_to: email,
+  }
 
   try {
-    const mailgunResponse = await fetch(`${apiBase.replace(/\/$/, '')}/v3/${encodeURIComponent(domain)}/messages`, {
+    const emailResponse = await fetch(`https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/email/sending/send`, {
       method: 'POST',
       headers: {
-        Authorization: `Basic ${btoa(`api:${apiKey}`)}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Bearer ${apiToken}`,
+        'Content-Type': 'application/json',
       },
-      body: payload,
+      body: JSON.stringify(payload),
     })
+    const emailResult = await emailResponse.json().catch(() => null)
 
-    if (!mailgunResponse.ok) {
-      console.error('Mailgun rejected contact form submission:', mailgunResponse.status)
+    if (!emailResponse.ok || !emailResult?.success) {
+      console.error('Cloudflare Email rejected contact form submission:', emailResponse.status, emailResult?.errors?.[0]?.code ?? 'unknown')
       return json({ error: 'No fue posible enviar tu solicitud. Inténtalo de nuevo o llámanos.' }, 502)
     }
 
     return json({ ok: true }, 200)
   } catch (error) {
-    console.error('Mailgun contact form request failed:', error instanceof Error ? error.name : 'Unknown error')
+    console.error('Cloudflare Email contact form request failed:', error instanceof Error ? error.name : 'Unknown error')
     return json({ error: 'No fue posible enviar tu solicitud. Inténtalo de nuevo o llámanos.' }, 502)
   }
 }

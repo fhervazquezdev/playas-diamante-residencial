@@ -1,16 +1,3 @@
 {
-  "rewrites": [
-    { "source": "/master-suite", "destination": "/index.html" },
-    { "source": "/master-suite/", "destination": "/index.html" },
-    { "source": "/amatista", "destination": "/index.html" },
-    { "source": "/amatista/", "destination": "/index.html" },
-    { "source": "/turquesa", "destination": "/index.html" },
-    { "source": "/turquesa/", "destination": "/index.html" },
-    { "source": "/suite", "destination": "/index.html" },
-    { "source": "/suite/", "destination": "/index.html" },
-    { "source": "/penthouse", "destination": "/index.html" },
-    { "source": "/penthouse/", "destination": "/index.html" },
-    { "source": "/nuevas-suites", "destination": "/index.html" },
-    { "source": "/nuevas-suites/", "destination": "/index.html" }
-  ]
+  "cleanUrls": true
 }
